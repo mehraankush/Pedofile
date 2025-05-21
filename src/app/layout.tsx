@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "PDF Magician",
+  title: "Pedofile | Manage your PDFs",
   description: "A simple PDF management tool",
 };
 

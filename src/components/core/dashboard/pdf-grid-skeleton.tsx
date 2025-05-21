@@ -1,5 +1,6 @@
 import type React from "react"
-import PdfCardSkeleton from "./pdf-grid-skeleton"
+import PdfCardSkeleton from "./pdf-card-skeleton"
+
 
 interface PdfGridSkeletonProps {
     count?: number

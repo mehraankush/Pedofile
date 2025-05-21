@@ -2,69 +2,80 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { ArrowLeft, Download, MessageSquare, Send, User, ExternalLink } from "lucide-react"
+import { ArrowLeft, Download, MessageSquare, ExternalLink } from "lucide-react"
 
-import { Button } from "@/components/ui/button"
-import { Textarea } from "@/components/ui/textarea"
-import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
+import { Card, CardContent } from "@/components/ui/card"
+import { useGetSharedDocumentById } from "@/services/pdf"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
-import { useGetPdfById } from "@/services/pdf"
-
-// Mock data for comments
-const MOCK_COMMENTS = [
-    {
-        id: "1",
-        user: { name: "John Doe", email: "john@example.com" },
-        content: "This looks great! I especially like the approach outlined on page 2.",
-        createdAt: "2025-05-16T10:30:00Z",
-    },
-    {
-        id: "2",
-        user: { name: "Jane Smith", email: "jane@example.com" },
-        content: "I think we should add more details about the budget in section 3.",
-        createdAt: "2025-05-16T11:45:00Z",
-    },
-    {
-        id: "3",
-        user: { name: "Alex Johnson", email: "alex@example.com" },
-        content: "Can we schedule a meeting to discuss the timeline?",
-        createdAt: "2025-05-17T09:15:00Z",
-    },
-]
+import CommentComponent from "../comments/CommentComponent"
+import { useGetComments } from "@/services/Comment"
+import { ApiError } from "@/services/apiCalls"
 
 
 export default function UserPdfCOmponent({ id }: { id: string }) {
-    const router = useRouter()
-    const { data, isLoading } = useGetPdfById(id)
+    const {
+        data,
+        isLoading,
+        isError,
+        error,
+    } = useGetSharedDocumentById(id)
+    const router = useRouter();
 
-    const [comments, setComments] = useState(MOCK_COMMENTS)
-    const [newComment, setNewComment] = useState("")
+    // const [comments, setComments] = useState(MOCK_COMMENTS)
     const [isCommentsOpen, setIsCommentsOpen] = useState(true)
     const [showDetails, setShowDetails] = useState(false)
+    const {
+        data: comments,
+        //  isLoading:isCommentLoading
+    } = useGetComments(id)
 
-    const handleAddComment = () => {
-        if (!newComment.trim()) return
 
-        const comment = {
-            id: String(comments.length + 1),
-            user: { name: "Current User", email: "user@example.com" },
-            content: newComment,
-            createdAt: new Date().toISOString(),
+    if (isError) {
+        const apiError = error as ApiError;
+        if (apiError.status === 401) {
+            return (
+                <div className="flex items-center justify-center h-screen">
+                    <div className="text-center">
+                        <h2 className="text-xl font-semibold mb-2">Unauthorized</h2>
+                        <p className="text-muted-foreground">You are not authorized to view this document</p>
+                        <Button className="mt-4" onClick={() => router.push("/dashboard")}>
+                            Return to Dashboard
+                        </Button>
+                    </div>
+                </div>
+            )
+        } else if (apiError.status === 403) {
+            return (
+                <div className="flex items-center justify-center h-screen">
+                    <div className="text-center">
+                        <h2 className="text-xl font-semibold mb-2">Forbidden</h2>
+                        <p className="text-muted-foreground">You do not have permission to view this document</p>
+                        <Button className="mt-4" onClick={() => router.push("/dashboard")}>
+                            Return to Dashboard
+                        </Button>
+                    </div>
+                </div>
+            )
         }
-
-        setComments([...comments, comment])
-        setNewComment("")
+        else {
+            return (
+                <div className="flex items-center justify-center h-screen">
+                    <div className="text-center">
+                        <h2 className="text-xl font-semibold mb-2">Error</h2>
+                        <p className="text-muted-foreground">An error occurred while fetching the document</p>
+                        <Button className="mt-4" onClick={() => router.push("/dashboard")}>
+                            Return to Dashboard
+                        </Button>
+                    </div>
+                </div>
+            )
+        }
     }
 
-
-    const formatDate = (dateString: string) => {
-        const date = new Date(dateString)
-        return date.toLocaleString()
-    }
-    
     if (isLoading) {
         return (
             <div className="flex items-center justify-center h-screen">
@@ -73,7 +84,6 @@ export default function UserPdfCOmponent({ id }: { id: string }) {
         );
     }
 
-    console.log("data inside pdf ", data, id)
 
     if (!data) {
         return (
@@ -211,7 +221,6 @@ export default function UserPdfCOmponent({ id }: { id: string }) {
                                 title={data.title}
                                 allow="autoplay"
                                 allowFullScreen
-                                allowTransparency
                                 loading="lazy"
                             ></iframe>
                         </div>
@@ -219,71 +228,11 @@ export default function UserPdfCOmponent({ id }: { id: string }) {
                 </div>
 
                 {isCommentsOpen && (
-                    <div className="w-full md:w-[500px] bg-background border-l z-10 flex flex-col">
-                        <div className="p-4 border-b flex items-center justify-between">
-                            <h2 className="font-medium">Comments ({comments.length})</h2>
-                            <Button variant="ghost" size="icon" className="md:hidden" onClick={() => setIsCommentsOpen(false)}>
-                                <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    width="24"
-                                    height="24"
-                                    viewBox="0 0 24 24"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    strokeWidth="2"
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    className="h-4 w-4"
-                                >
-                                    <path d="M18 6 6 18" />
-                                    <path d="m6 6 12 12" />
-                                </svg>
-                            </Button>
-                        </div>
-                        <div className="flex-1 overflow-auto p-4">
-                            {comments.length === 0 ? (
-                                <div className="text-center py-8">
-                                    <MessageSquare className="h-8 w-8 mx-auto text-muted-foreground/60 mb-2" />
-                                    <p className="text-muted-foreground">No comments yet</p>
-                                </div>
-                            ) : (
-                                <div className="space-y-4">
-                                    {comments.map((comment) => (
-                                        <div key={comment.id} className="bg-muted/50 rounded-lg p-3">
-                                            <div className="flex items-center gap-2 mb-2">
-                                                <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center text-primary">
-                                                    <User className="h-4 w-4" />
-                                                </div>
-                                                <div>
-                                                    <div className="font-medium text-sm">{comment.user.name}</div>
-                                                    <div className="text-xs text-muted-foreground">{formatDate(comment.createdAt)}</div>
-                                                </div>
-                                            </div>
-                                            <p className="text-sm">{comment.content}</p>
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
-                        </div>
-                        <div className="p-4 border-t">
-                            <div className="flex gap-2">
-                                <Textarea
-                                    placeholder="Add a comment..."
-                                    className="min-h-[80px]"
-                                    value={newComment}
-                                    onChange={(e) => setNewComment(e.target.value)}
-                                />
-                                <Button
-                                    size="icon"
-                                    className="h-10 w-10 shrink-0 self-end"
-                                    onClick={handleAddComment}
-                                    disabled={!newComment.trim()}
-                                >
-                                    <Send className="h-4 w-4" />
-                                </Button>
-                            </div>
-                        </div>
-                    </div>
+                    <CommentComponent
+                        documentId={id}
+                        comments={comments}
+                        setIsCommentsOpen={setIsCommentsOpen}
+                    />
                 )}
 
             </main>

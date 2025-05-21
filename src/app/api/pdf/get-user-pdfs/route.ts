@@ -31,7 +31,7 @@ export async function GET() {
             .find({ owner: userId })
             .toArray();
 
-            console.log("documents", documents)
+            // console.log("documents", documents)
         return NextResponse.json({
             success: true,
             data: documents

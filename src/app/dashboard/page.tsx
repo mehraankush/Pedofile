@@ -3,13 +3,7 @@
 import type React from "react"
 
 import { useMemo, useState } from "react"
-import { FileText, Plus } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import {
-    Dialog,
-    DialogContent,
-    DialogTrigger,
-} from "@/components/ui/dialog"
+import { FileText } from "lucide-react"
 
 import { useGetUserPdfs } from "@/services/pdf"
 import { PdfDocumentType } from "@/types/global"
@@ -25,13 +19,14 @@ export default function DashboardPage() {
     const { data: alluserPdfs, isLoading } = useGetUserPdfs();
 
     const filteredPdfs = useMemo(() => {
-        return alluserPdfs.filter((pdf: PdfDocumentType) =>
+        console.log("wjkefbre")
+        return alluserPdfs && alluserPdfs.filter((pdf: PdfDocumentType) =>
             pdf.title.toLowerCase().includes(searchQuery.toLowerCase())
         )
-    }, [alluserPdfs, searchQuery])
+    }, [searchQuery])
 
 
-    // console.log('alluserPdfs', alluserPdfs)
+    console.log('alluserPdfs', alluserPdfs)
     return (
         <div className="flex min-h-screen flex-col">
 
@@ -43,7 +38,10 @@ export default function DashboardPage() {
                         searchQuery={searchQuery}
                     />
 
-                    {filteredPdfs.length === 0 ? (
+                    { isLoading && <PdfGridSkeleton /> }
+
+
+                    {filteredPdfs && filteredPdfs.length === 0 ? (
                         <div className="text-center py-12">
                             <div className="flex justify-center mb-4">
                                 <FileText className="h-12 w-12 text-muted-foreground/60" />
@@ -52,33 +50,17 @@ export default function DashboardPage() {
                             <p className="text-muted-foreground mb-4">
                                 {searchQuery ? "No PDFs match your search query" : "Upload your first PDF to get started"}
                             </p>
-                            {!searchQuery && (
-                                <Dialog>
-                                    <DialogTrigger asChild>
-                                        <Button>
-                                            <Plus className="mr-2 h-4 w-4" />
-                                            Upload PDF
-                                        </Button>
-                                    </DialogTrigger>
-                                    <DialogContent>{/* Upload dialog content */}</DialogContent>
-                                </Dialog>
-                            )}
                         </div>
                     ) : (
-                        isLoading ? (
-                            <PdfGridSkeleton />
-                        ) : (
-                            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                                {alluserPdfs?.length > 0 &&
-                                    alluserPdfs.map((pdf: PdfDocumentType, ind: number) => (
-                                        <PdfCard
-                                            key={ind}
-                                            pdf={pdf}
-                                        />
-                                    ))}
-                            </div>
-
-                        )
+                        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                            {alluserPdfs?.length > 0 &&
+                                alluserPdfs.map((pdf: PdfDocumentType, ind: number) => (
+                                    <PdfCard
+                                        key={ind}
+                                        pdf={pdf}
+                                    />
+                                ))}
+                        </div>
                     )}
                 </div>
             </main>

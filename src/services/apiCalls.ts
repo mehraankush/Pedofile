@@ -3,6 +3,7 @@ import axios from 'axios';
 
 export const getUserPdfs = async () => {
     try {
+        console.log("wlkjgfyvre")
         const res = await fetch('/api/pdf/get-user-pdfs', {
             method: 'GET',
         })
