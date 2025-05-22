@@ -62,7 +62,7 @@ export function useAuth() {
                 })
                 localStorage.removeItem('user')
                 toast.error(data.message || 'Failed to fetch user info')
-                router.push('/login')
+                // router.push('/login')
             }
         } catch (err) {
 

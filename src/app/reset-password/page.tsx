@@ -62,7 +62,7 @@ export default function ResetPasswordPage() {
                         <div className="flex items-center justify-center mb-4">
                             <div className="flex items-center gap-2">
                                 <FileText className="h-6 w-6 text-primary" />
-                                <span className="text-xl font-bold">PDFCollab</span>
+                                <span className="text-xl font-bold">PedoFile</span>
                             </div>
                         </div>
                         <CardTitle className="text-2xl font-bold text-center">Reset password</CardTitle>

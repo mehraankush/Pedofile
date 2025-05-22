@@ -148,13 +148,10 @@ export async function POST(req: Request) {
     }
 }
 
-
-export async function GET(
-    req: NextRequest,
-) {
+export async function GET(req: NextRequest) {
     try {
         const url = new URL(req.url);
-        const documentId = url.searchParams.get('id');
+        const documentId = url.searchParams.get("id");
 
         if (!documentId) {
             return NextResponse.json(
@@ -163,25 +160,9 @@ export async function GET(
             );
         }
 
-        // Authenticate user
-        const cookieStore = await cookies();
-        const token = cookieStore.get('token')?.value;
-
-        if (!token) {
-            return NextResponse.json(
-                { success: false, message: "Unauthorized" },
-                { status: 401 }
-            );
-        }
-
-        const decodedToken = jwt.verify(token, JWT_SECRET) as { user: IUser };
-        const currentUserId = decodedToken.user._id;
-
-        // Connect to database
         const client = await clientPromise;
         const db = client.db();
 
-        // Find document by ID
         const document = await db
             .collection("Document")
             .findOne({ _id: new ObjectId(documentId) });
@@ -193,28 +174,55 @@ export async function GET(
             );
         }
 
-        // Get owner details
         const owner = await db
             .collection("users")
             .findOne({ _id: new ObjectId(document.owner) });
 
-        // Check permissions
-        const isOwner = document.owner && document.owner.toString() === currentUserId;
-        const isSharedWithUser = document.sharedWith &&
-            document.sharedWith.some((id: string | ObjectId) => id.toString() === currentUserId);
-        const isPublic = document.isPublic === true;
+        // If public, skip auth and return immediately
+        if (document.isPublic === true) {
 
+            return NextResponse.json(
+                {
+                    success: true,
+                    data: {
+                        ...document,
+                        owner: {
+                            name: owner?.name,
+                            email: owner?.email,
+                        },
+                        publicUrl: `${BASE_URL}/shared/${document._id}`,
+                    },
+                },
+                { status: 200 }
+            );
+        }
 
+        const cookieStore = await cookies();
+        const token = cookieStore.get("token")?.value;
 
-        // Check if user has any kind of access
-        const hasAccess = isOwner || isSharedWithUser || isPublic;
+        if (!token) {
+            return NextResponse.json(
+                { success: false, message: "Unauthorized" },
+                { status: 401 }
+            );
+        }
+
+        const decodedToken = jwt.verify(token, JWT_SECRET) as { user: IUser };
+        const currentUserId = decodedToken.user._id;
+
+        const isOwner = document.owner?.toString() === currentUserId;
+        const isSharedWithUser = document.sharedWith?.some(
+            (id: string | ObjectId) => id.toString() === currentUserId
+        );
+
+        const hasAccess = isOwner || isSharedWithUser;
 
         if (!hasAccess) {
             return NextResponse.json(
                 {
                     success: false,
                     message: "You do not have permission to access this document",
-                    accessLevel: 'none'
+                    accessLevel: "none",
                 },
                 { status: 403 }
             );
@@ -229,12 +237,11 @@ export async function GET(
                         name: owner?.name,
                         email: owner?.email,
                     },
-                    publicUrl: isPublic ? `${BASE_URL}/shared/${document._id}` : null
-                }
+                    publicUrl: null,
+                },
             },
             { status: 200 }
         );
-
     } catch (error) {
         console.error("Error checking document permissions:", error);
         return NextResponse.json(

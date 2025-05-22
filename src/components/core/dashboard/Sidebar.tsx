@@ -12,7 +12,7 @@ import {
 import Link from "next/link"
 import { useAuth } from '@/hooks/UserAuth'
 import { usePathname } from 'next/navigation'
-import { FileText, Home, LogOut } from "lucide-react"
+import { FileText, Home, LogOut, User } from "lucide-react"
 
 const DashboardSidebar = () => {
 
@@ -36,6 +36,12 @@ const DashboardSidebar = () => {
                             <Link href="/dashboard">
                                 <Home className="mr-2 h-4 w-4" />
                                 <span>Dashboard</span>
+                            </Link>
+                        </SidebarMenuButton>
+                        <SidebarMenuButton asChild isActive={pathname === "/profile"}>
+                            <Link href="/profile">
+                                <User className="mr-2 h-4 w-4" />
+                                <span>Profile</span>
                             </Link>
                         </SidebarMenuButton>
                     </SidebarMenuItem>

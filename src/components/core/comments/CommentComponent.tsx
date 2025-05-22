@@ -10,6 +10,9 @@ import { MessageSquare, Send, ChevronDown, ChevronUp } from "lucide-react"
 import { queryClient } from "@/Providers/QueryProvider"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { EnrichedComment } from "@/types/global"
+import { useAuth } from "@/hooks/UserAuth"
+import { redirect, usePathname } from "next/navigation"
+
 
 
 const CommentComponent = ({
@@ -21,14 +24,20 @@ const CommentComponent = ({
   comments: EnrichedComment[]
   setIsCommentsOpen: React.Dispatch<React.SetStateAction<boolean>>
 }) => {
+  const { user } = useAuth();
+  const pathname = usePathname();
   const [newComment, setNewComment] = useState("")
-  const [replyingTo, setReplyingTo] = useState<string | null>(null)
-  const [replyContent, setReplyContent] = useState("")
-  const [expandedComments, setExpandedComments] = useState<string[]>([])
   const { mutate: postComment } = usePostComment()
+  const [replyContent, setReplyContent] = useState("")
+  const [replyingTo, setReplyingTo] = useState<string | null>(null)
+  const [expandedComments, setExpandedComments] = useState<string[]>([])
 
   const handleAddComment = () => {
     if (!newComment.trim()) return
+
+    if (!user) {
+      redirect(`/login?redirect=${encodeURIComponent(pathname)}`)
+    }
 
     postComment(
       {
@@ -268,14 +277,14 @@ const CommentComponent = ({
     <div className="w-full md:w-[500px] bg-background border-l z-10 flex flex-col">
       <div className="p-3 border-b flex items-center gap-2">
         <MessageSquare className="h-5 w-5" />
-        <h2 className="font-medium">Comments ({comments.length})</h2>
+        <h2 className="font-medium">Comments ({comments?.length || 0})</h2>
         <Button variant="ghost" size="icon" className="ml-auto md:hidden" onClick={() => setIsCommentsOpen(false)}>
           <MessageSquare className="h-4 w-4" />
         </Button>
       </div>
 
       <div className="flex-1 overflow-auto">
-        {comments.length === 0 ? (
+        {comments && comments.length === 0 ? (
           <div className="text-center py-8">
             <MessageSquare className="h-8 w-8 mx-auto text-muted-foreground/60 mb-2" />
             <p className="text-muted-foreground">No comments yet</p>

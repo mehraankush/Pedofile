@@ -3,15 +3,15 @@ import {
     SidebarProvider,
     SidebarTrigger,
 } from "@/components/ui/sidebar"
-import DashboardSidebar from "@/components/core/dashboard/Sidebar"
 import { cookies } from "next/headers"
 import { redirect } from "next/navigation"
+import DashboardSidebar from "@/components/core/dashboard/Sidebar"
 import UserMenu from "@/components/core/dashboard/UserMenu"
 
 export default async function DashboardLayout({
     children
 }: { children: React.ReactNode }) {
-    
+
     const cookieStore = await cookies()
     const token = cookieStore.get('token')?.value
 
