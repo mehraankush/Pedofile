@@ -4,7 +4,7 @@ import { Db, ObjectId } from "mongodb";
 import { IUser } from '@/models/User';
 import clientPromise from "@/lib/mongodb";
 import { NextRequest, NextResponse } from "next/server";
-
+import { stripHtmlForStorage } from "@/lib/format-comment"
 const JWT_SECRET = process.env.JWT_SECRET!
 
 
@@ -50,13 +50,13 @@ export async function POST(req: NextRequest) {
             }, { status: 404 });
         }
 
-        if (document.replies.length >= 5) {
+        if ((Array.isArray(document?.replies) && document?.replies?.length || 0) >= 5) {
             return NextResponse.json({
                 success: false,
-                message: 'Maximum number of replies reached'
+                message: 'Maximum number of replies reached',
             }, { status: 400 });
         }
-
+        
         const userId = decoded.user._id as string;
 
         const hasAccess =
@@ -71,8 +71,10 @@ export async function POST(req: NextRequest) {
             }, { status: 403 });
         }
 
+        const sanitizedContent = stripHtmlForStorage(content)
+
         const commentData = {
-            content,
+            content: sanitizedContent,
             document: new ObjectId(documentId),
             author: new ObjectId(userId),
             parentComment: parentCommentId ? new ObjectId(parentCommentId) : null,

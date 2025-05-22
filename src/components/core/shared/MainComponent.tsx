@@ -42,6 +42,10 @@ export default function PDFViewerPage({ id }: { id: string }) {
                     <div className="text-center">
                         <h2 className="text-xl font-semibold mb-2">Unauthorized</h2>
                         <p className="text-muted-foreground">You are not authorized to view this document</p>
+                        <p className="text-muted-foreground">
+                            {` Try logging in with the correct account, or sign up if you don't have one.`}
+                        </p>
+
                         <Button className="mt-4" onClick={() => router.push("/dashboard")}>
                             Return to Dashboard
                         </Button>

@@ -40,7 +40,7 @@ export default function Home() {
 
                 <div className="flex flex-col sm:flex-row gap-3 pt-2">
                   <Link href="/dashboard">
-                    <Button size="lg" className="gap-2 text-base font-medium px-6 py-6 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 bg-primary hover:bg-primary/90 cursor-pointer">
+                    <Button size="lg" className="gap-2 w-full sm:w-fit text-base font-medium px-6 py-6 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 bg-primary hover:bg-primary/90 cursor-pointer">
                       Get Started Free
                       <ArrowRight className="h-5 w-5" />
                     </Button>
@@ -166,7 +166,7 @@ export default function Home() {
                   </p>
                   <div className="flex flex-col sm:flex-row gap-3 pt-2 justify-center md:justify-start">
                     <Link href="/dashboard">
-                      <Button size="lg" variant="secondary" className="gap-2 text-base font-medium px-6 py-6 rounded-xl cursor-pointer">
+                      <Button size="lg" variant="secondary" className="gap-2 text-base font-medium px-6 py-6 rounded-xl cursor-pointer w-full sm:w-fit">
                         Get Started Free
                         <ArrowRight className="h-5 w-5" />
                       </Button>
