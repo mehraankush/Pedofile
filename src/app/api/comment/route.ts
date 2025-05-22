@@ -13,7 +13,6 @@ export async function POST(req: NextRequest) {
 
         const { content, id: documentId, parentCommentId = null } = await req.json();
 
-        console.log("parentCommentId", parentCommentId)
         if (!content || !documentId) {
             return NextResponse.json({
                 success: false,
@@ -49,6 +48,13 @@ export async function POST(req: NextRequest) {
                 success: false,
                 message: 'Document not found'
             }, { status: 404 });
+        }
+
+        if (document.replies.length >= 5) {
+            return NextResponse.json({
+                success: false,
+                message: 'Maximum number of replies reached'
+            }, { status: 400 });
         }
 
         const userId = decoded.user._id as string;
@@ -198,7 +204,7 @@ export async function GET(
 async function getEnrichedComments(
     db: Db,
     commentsFilter: { document: ObjectId; parentComment: ObjectId | null },
-    parentId?: string | null // Optional parentId to control replyCount inclusion
+    parentId?: string | null
 ) {
 
     const enrichedComments = await db.collection('Comment').aggregate([
@@ -247,7 +253,55 @@ async function getEnrichedComments(
                 preserveNullAndEmptyArrays: true,
             },
         },
-        // Step 6: Project the final output
+        // Step 6: Lookup and populate replies if replies field contains IDs
+        {
+            $lookup: {
+                from: 'Comment',
+                let: { replyIds: '$replies' },
+                pipeline: [
+                    {
+                        $match: {
+                            $expr: {
+                                $and: [
+                                    { $isArray: '$$replyIds' },
+                                    { $in: ['$_id', '$$replyIds'] }
+                                ]
+                            }
+                        }
+                    },
+                    // Lookup author data for each reply
+                    {
+                        $lookup: {
+                            from: 'users',
+                            localField: 'author',
+                            foreignField: '_id',
+                            as: 'authorData',
+                        },
+                    },
+                    {
+                        $unwind: {
+                            path: '$authorData',
+                            preserveNullAndEmptyArrays: true,
+                        },
+                    },
+                    // Project reply fields
+                    {
+                        $project: {
+                            _id: 1,
+                            content: 1,
+                            createdAt: 1,
+                            parentComment: 1,
+                            author: {
+                                name: { $ifNull: ['$authorData.name', 'Unknown'] },
+                                email: { $ifNull: ['$authorData.email', 'Unknown'] },
+                            },
+                        },
+                    }
+                ],
+                as: 'populatedReplies',
+            },
+        },
+        // Step 7: Project the final output
         {
             $project: {
                 // Include all original comment fields
@@ -270,6 +324,14 @@ async function getEnrichedComments(
                 replyCount: parentId
                     ? undefined
                     : { $ifNull: ['$replyData.replyCount', 0] },
+                // Replace replies field with populated replies if they exist, otherwise keep original
+                replies: {
+                    $cond: {
+                        if: { $gt: [{ $size: { $ifNull: ['$populatedReplies', []] } }, 0] },
+                        then: '$populatedReplies',
+                        else: '$replies'
+                    }
+                }
             },
         },
     ]).toArray();

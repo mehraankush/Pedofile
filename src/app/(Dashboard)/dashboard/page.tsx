@@ -19,7 +19,6 @@ export default function DashboardPage() {
     const { data: alluserPdfs, isLoading } = useGetUserPdfs();
 
     const filteredPdfs = useMemo(() => {
-        console.log("wjkefbre")
         return alluserPdfs && alluserPdfs.filter((pdf: PdfDocumentType) =>
             pdf.title.toLowerCase().includes(searchQuery.toLowerCase())
         )

@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { ArrowLeft, Download, MessageSquare, ExternalLink } from "lucide-react"
+import { ExternalLink } from "lucide-react"
 
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -10,10 +10,10 @@ import { Separator } from "@/components/ui/separator"
 import { Card, CardContent } from "@/components/ui/card"
 import { useGetSharedDocumentById } from "@/services/pdf"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import CommentComponent from "../comments/CommentComponent"
 import { useGetComments } from "@/services/Comment"
 import { ApiError } from "@/services/apiCalls"
+import SharedNavbar from "./SharedNavbar"
 
 
 export default function PDFViewerPage({ id }: { id: string }) {
@@ -103,45 +103,13 @@ export default function PDFViewerPage({ id }: { id: string }) {
     return (
         <div className="flex flex-col min-h-screen ">
 
-            <header className="border-b sticky top-0 bg-white z-10">
-                <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 flex items-center justify-between h-16">
-                    <div className="flex items-center gap-3">
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => router.push("/dashboard")}
-                            className="text-gray-500 hover:text-gray-700"
-                        >
-                            <ArrowLeft className="h-5 w-5" />
-                            <span className="sr-only">Back to dashboard</span>
-                        </Button>
-                        <h1 className="text-lg font-medium truncate">{data.title}</h1>
-                    </div>
 
-                    <div className="flex items-center gap-3">
-                        <Button variant="outline" size="sm" onClick={() => setShowDetails(!showDetails)}>
-                            {showDetails ? "Hide Details" : "Show Details"}
-                        </Button>
-                        <Button variant="outline" size="sm">
-                            <Download className="mr-2 h-4 w-4" />
-                            Download
-                        </Button>
-                        <TooltipProvider>
-                            <Tooltip>
-                                <TooltipTrigger asChild>
-                                    <Button variant="secondary" size="sm">
-                                        <MessageSquare className="mr-2 h-4 w-4" />
-                                        Comments ({3})
-                                    </Button>
-                                </TooltipTrigger>
-                                <TooltipContent>
-                                    <p>Comments are currently disabled</p>
-                                </TooltipContent>
-                            </Tooltip>
-                        </TooltipProvider>
-                    </div>
-                </div>
-            </header>
+            <SharedNavbar
+                commentLength={comments?.length || 0}
+                setShowDetails={setShowDetails}
+                title={data.title}
+                showDetails={showDetails}
+            />
 
             <main className="flex-1 flex">
 
