@@ -117,11 +117,8 @@ export async function POST(req: NextRequest) {
     }
 }
 
-export async function GET(
-    req: NextRequest,
-) {
+export async function GET(req: NextRequest) {
     try {
-
         const url = new URL(req.url);
         const documentId = url.searchParams.get('id');
         const parentId = url.searchParams.get("parentId");
@@ -136,24 +133,7 @@ export async function GET(
         const client = await clientPromise;
         const db = client.db();
 
-        const cookieStore = await cookies()
-        const token = cookieStore.get('token')?.value
-
-        if (!token) {
-            return NextResponse.json({
-                success: false,
-                message: 'Unauthorized'
-            }, { status: 401 });
-        }
-
-        const decoded = jwt.verify(token, JWT_SECRET) as { user: IUser };
-
-        if (!decoded || !decoded.user) {
-            return NextResponse.json({
-                success: false, message: 'Unauthorized'
-            }, { status: 401 });
-        }
-
+        // Fetch the document first
         const document = await db.collection("Document").findOne({
             _id: new ObjectId(documentId),
         });
@@ -165,22 +145,47 @@ export async function GET(
             );
         }
 
-        const userId = decoded.user._id;
-        const hasAccess =
-            document.owner?.toString() === userId ||
-            (document.sharedWith?.includes(userId)) ||
-            document.isPublic;
+        // Check if document is public early
+        const isPublic = document.isPublic === true;
+        let userId = null;
 
-        if (!hasAccess) {
-            return NextResponse.json(
-                {
+        if (!isPublic) {
+            const cookieStore = await cookies();
+            const token = cookieStore.get('token')?.value;
+
+            if (!token) {
+                return NextResponse.json({
                     success: false,
-                    message: "You do not have permission to view comments"
-                },
-                { status: 403 }
-            );
+                    message: 'Unauthorized'
+                }, { status: 401 });
+            }
+
+            const decoded = jwt.verify(token, JWT_SECRET) as { user: IUser };
+
+            if (!decoded || !decoded.user) {
+                return NextResponse.json({
+                    success: false, message: 'Unauthorized'
+                }, { status: 401 });
+            }
+
+            userId = decoded.user._id;
+
+            const hasAccess =
+                document.owner?.toString() === userId ||
+                document.sharedWith?.includes(userId);
+
+            if (!hasAccess) {
+                return NextResponse.json(
+                    {
+                        success: false,
+                        message: "You do not have permission to view comments"
+                    },
+                    { status: 403 }
+                );
+            }
         }
 
+        // Build query for comments
         const query = {
             document: new ObjectId(documentId),
             parentComment: parentId ? new ObjectId(parentId) : null,

@@ -356,7 +356,7 @@ const CommentComponent = ({
   }
 
   return (
-    <div className="w-full md:w-[500px] bg-background border-l z-10 flex flex-col">
+    <div className="w-full md:w-[500px] h-[calc(100vh-64px)] bg-background border-l z-10 flex flex-col">
 
       <div className="p-4 border-b flex items-center gap-2">
         <MessageSquare className="h-5 w-5" />

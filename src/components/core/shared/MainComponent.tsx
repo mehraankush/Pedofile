@@ -13,8 +13,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import CommentComponent from "../comments/CommentComponent"
 import { useGetComments } from "@/services/Comment"
 import { ApiError } from "@/services/apiCalls"
-import SharedNavbar from "./SharedNavbar"
-
+import SharedNavbar from "../shared/SharedNavbar"
 
 export default function PDFViewerPage({ id }: { id: string }) {
     const {
@@ -103,7 +102,7 @@ export default function PDFViewerPage({ id }: { id: string }) {
         )
     }
 
-
+    console.log("comments", comments)
     return (
         <div className="flex flex-col min-h-screen ">
 
@@ -115,7 +114,7 @@ export default function PDFViewerPage({ id }: { id: string }) {
                 showDetails={showDetails}
             />
 
-            <main className="flex-1 flex">
+            <main className="flex-1 flex flex-col sm:flex-row">
 
                 <div className="flex flex-col gap-5 w-full  ">
 

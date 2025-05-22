@@ -114,7 +114,7 @@ export default function UserPdfCOmponent({ id }: { id: string }) {
                 showDetails={showDetails}
             />
 
-            <main className="flex-1 flex">
+            <main className="flex-1 flex flex-col sm:flex-row">
 
                 <div className="flex flex-col gap-5 w-full  ">
 
