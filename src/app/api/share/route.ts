@@ -44,7 +44,7 @@ export async function POST(req: Request) {
 
         // Handle public sharing
         if (shareType === 'public') {
-
+            console.log("inside public share")
             await db.collection('Document').updateOne(
                 { _id: new ObjectId(documentId) },
                 { $set: { isPublic: true } }
@@ -65,6 +65,7 @@ export async function POST(req: Request) {
                     message: 'Email is required for individual sharing'
                 }, { status: 400 });
             }
+            console.log("insdei provate share")
 
             // Find the user by email
             const targetUser = await db
