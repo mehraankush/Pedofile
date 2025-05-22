@@ -15,6 +15,7 @@ import {
     DialogDescription,
 } from "@/components/ui/dialog"
 import { Plus, Search, Upload } from "lucide-react"
+import { queryClient } from "@/Providers/QueryProvider"
 
 interface UploadPdfProps {
     setSearchQuery: React.Dispatch<React.SetStateAction<string>>
@@ -62,7 +63,7 @@ const UploadPdf: React.FC<UploadPdfProps> = ({  setSearchQuery, searchQuery }) =
             if (!response.ok) {
                 throw new Error(result.error || "Failed to upload file")
             }
-
+            queryClient.invalidateQueries(["get-user-pdfs"])
             toast.success("Success")
 
             setIsUploadDialogOpen(false)
