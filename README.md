@@ -1,6 +1,6 @@
 # 📄 PDF Management & Collaboration System
 
-![Banner](https://your-image-link.com/banner.png)
+![Banner](https://github.com/mehraankush/Pedofile/blob/main/public/Banner.png)
 
 A Full-stack web application that enables users to manage, share, and collaborate on PDF files. Built using **Next.js**, **MongoDB**, and **Google Drive API**, this system allows secure document storage, robust user management, and real-time commenting on shared PDFs.
 
@@ -55,6 +55,8 @@ A Full-stack web application that enables users to manage, share, and collaborat
 - Clean, modern interface built with TailwindCSS.
 - Works across mobile, tablet, and desktop screens.
 - Easy-to-navigate layout with quick access to core features.
+
+![Schema](https://github.com/mehraankush/Pedofile/blob/main/public/schema.png)
 
 ---
 
