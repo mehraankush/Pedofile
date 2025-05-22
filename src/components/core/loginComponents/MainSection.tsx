@@ -92,7 +92,7 @@ export default function LoginPage() {
   }
 
   const handleForgotPassword = () => {
-    toast.success("If your email is registered, you will receive a password reset link.")
+    router.push("/request-reset")
   }
 
   return (

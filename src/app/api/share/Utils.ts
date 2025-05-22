@@ -1,69 +1,69 @@
 import { Resend } from 'resend';
 import { IDocument } from '@/models/Document';
+import { ObjectId } from 'mongodb';
 
 
-export interface DocumentWithId  extends IDocument {
-    _id?: string
+export interface DocumentWithId extends IDocument {
+  _id?: string
 }
 
 interface SendShareEmailProps {
-    recipientEmail?: string
-    document: DocumentWithId
-    documentId: string
-    senderName: string
-    baseUrl: string
+  recipientEmail?: string
+  title: string;
+  documentId: ObjectId | string
+  senderName: string
+  baseUrl: string
 }
+
 
 const resend = new Resend(process.env.RESEND_API_KEY)
 
 export async function sendShareEmail(
-    recipientEmail: string,
-    document: DocumentWithId,
-    documentId: string,
-    senderName: string,
-    senderEmail: string
+  title: string,
+  documentId: ObjectId | string,
+  senderName: string,
 ) {
-    try {
+  try {
 
-        const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"
 
-        const emailHtml = generateEmailTemplate({
-            document,
-            documentId,
-            senderName,
-            baseUrl,
-        })
+    const emailHtml = generateEmailTemplate({
+      title,
+      documentId,
+      senderName,
+      baseUrl,
+    })
 
-        const { data, error } = await resend.emails.send({
-            from: process.env.EMAIL_FROM || senderEmail || "Document Sharing <noreply@pdfmagician.dev>",
-            to: recipientEmail,
-            subject: `${senderName} shared a document with you`,
-            html: emailHtml,
-        })
+    const { data, error } = await resend.emails.send({
+      from: "onboarding@resend.dev",
+      to: "ankushmehra.dev@gmail.com",
+      subject: `${senderName} shared a document with you`,
+      html: emailHtml,
+    })
 
-        if (error) {
-            console.error("Error sending email with Resend:", error)
-            throw error
-        }
-
-        console.log("Email sent successfully with Resend ID:", data?.id)
-        return true
-    } catch (error) {
-        console.error("Error sending email:", error)
-        throw error
+    if (error) {
+      console.error("Error sending email with Resend:", error)
+      throw error
     }
+
+    console.log("Email sent successfully with Resend ID:", data?.id)
+    return true
+  } catch (error) {
+    console.error("Error sending email:", error)
+    throw error
+  }
 }
 
 
 export const generateEmailTemplate = ({
-    document,
-    documentId,
-    senderName,
-    baseUrl,
+  title,
+  documentId,
+  senderName,
+  baseUrl,
 }: SendShareEmailProps) => {
-    const documentLink = `${baseUrl}/shared/${documentId}`
+  const documentLink = `${baseUrl}/shared/${documentId}`
 
-    return `
+  return `
       <!DOCTYPE html>
       <html lang="en">
       <head>
@@ -101,8 +101,8 @@ export const generateEmailTemplate = ({
                     <table role="presentation" style="width: 100%; border-collapse: collapse; margin-bottom: 32px; border: 1px solid #e5e7eb; border-radius: 8px; overflow: hidden;">
                       <tr>
                         <td style="padding: 24px;">
-                          <h2 style="margin: 0 0 8px; font-size: 18px; font-weight: 600; color: #111827;">${document.title}</h2>
-                          ${document.description ? `<p style="margin: 0 0 16px; font-size: 14px; line-height: 20px; color: #6b7280;">${document.description}</p>` : ""}
+                          <h2 style="margin: 0 0 8px; font-size: 18px; font-weight: 600; color: #111827;">${title}</h2>
+                          <p style="margin: 0 0 16px; font-size: 14px; line-height: 20px; color: #6b7280;">${'You Attenstion needed to this document'}</p>
                           <a href="${documentLink}" style="display: inline-block; padding: 10px 20px; background-color: #4f46e5; color: #ffffff; text-decoration: none; font-weight: 500; border-radius: 6px; font-size: 14px; margin-top: 16px;">View Document</a>
                         </td>
                       </tr>
@@ -137,4 +137,28 @@ export const generateEmailTemplate = ({
       </body>
       </html>
     `
+}
+
+
+export async function sendResetEmail(email: string, link: string) {
+  try {
+
+    const { data, error } = await resend.emails.send({
+      from: "onboarding@resend.dev",
+      to: "ankushmehra.dev@gmail.com",
+      subject: "Reset your password",
+      html: `<p>Click <a href="${link}">here</a> to reset your password.</p>`,
+    })
+
+    console.log("EMail Status", data)
+    if (error) {
+      console.error("Error sending email with Resend:", error)
+      throw error
+    }
+  } catch (error) {
+    console.error("Error sending email:", error);
+    throw error;
+
+  }
+  return true
 }

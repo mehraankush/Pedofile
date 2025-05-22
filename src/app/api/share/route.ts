@@ -4,7 +4,8 @@ import { IUser } from "@/models/User";
 import { cookies } from "next/headers";
 import clientPromise from "@/lib/mongodb";
 import { NextRequest, NextResponse } from "next/server";
-// import { sendShareEmail } from "./Utils";
+import { sendShareEmail } from "./Utils";
+
 
 
 const JWT_SECRET = process.env.JWT_SECRET!
@@ -16,8 +17,6 @@ export async function POST(req: Request) {
         const body = await req.json();
         const { shareType, email, documentId } = body;
 
-        console.log("body data ", shareType, email, documentId)
-
         const cookieStore = await cookies()
         const token = cookieStore.get('token')?.value
         if (!token) {
@@ -27,7 +26,7 @@ export async function POST(req: Request) {
             }, { status: 401 })
         }
 
-        // const decodedToken = jwt.verify(token, JWT_SECRET) as { user: IUser }
+        const decodedToken = jwt.verify(token, JWT_SECRET) as { user: IUser }
 
         const client = await clientPromise
         const db = client.db();
@@ -104,26 +103,24 @@ export async function POST(req: Request) {
             console.log("sendEmail", sendEmail)
 
             // Send email notification
-            // if (sendEmail !== true) {
-            //     try {
-            //         console.log("inside send mail")
-            //         await sendShareEmail(
-            //             email,
-            //             document,
-            //             document._id,
-            //             decodedToken.user.name,
-            //             decodedToken.user.email
-            //         );
+            if (sendEmail !== true) {
+                try {
+                    
+                    await sendShareEmail(
+                        document.title,
+                        document._id,
+                        decodedToken.user.name,
+                    );
 
-            //         await db.collection('Document').updateOne(
-            //             { _id: new ObjectId(documentId) },
-            //             { $set: { sendEmail: true } }
-            //         );
+                    await db.collection('Document').updateOne(
+                        { _id: new ObjectId(documentId) },
+                        { $set: { sendEmail: true } }
+                    );
 
-            //     } catch (emailError) {
-            //         console.error('Failed to send share email:', emailError);
-            //     }
-            // }
+                } catch (emailError) {
+                    console.error('Failed to send share email:', emailError);
+                }
+            }
 
             return NextResponse.json({
                 success: true,

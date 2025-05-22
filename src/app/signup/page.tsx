@@ -87,7 +87,7 @@ export default function SignupPage() {
 
     return (
         <div className="flex min-h-screen flex-col">
-            <div className="container flex flex-1 items-center justify-center py-12">
+            <div className=" flex flex-1 items-center justify-center py-12">
                 <Card className="w-full max-w-md">
                     <CardHeader className="space-y-1">
                         <div className="flex items-center justify-center mb-4">
